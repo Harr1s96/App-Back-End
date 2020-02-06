@@ -14,9 +14,9 @@ Pipeline:
 Nexus:
     backup repo of images for docker
 
-# Documentation
+#Documentation
 
-## Prerequisites:
+##Prerequisites:
 * AWS account, free tier at least
 * Project on GitHub
 * DockerHub account
