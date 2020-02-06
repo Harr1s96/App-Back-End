@@ -8,14 +8,14 @@ pipeline {
         }*/
         stage('-- build docker image --') {
             steps {
-                sh "docker build -t back-end ."
+                sh "docker build -t back-end:prod ."
             }
         }
         stage('-- deploy image to Docker Hub --') {
             steps {
                 withDockerRegistry([credentialsId: "docker-credentials", url: ""]) {
-                    sh 'docker tag back-end bigheck123/back-end'
-                    sh 'docker push bigheck123/back-end'
+                    sh 'docker tag back-end:prod bigheck123/back-end:prod'
+                    sh 'docker push bigheck123/back-end:prod'
                 }
             }
         }
