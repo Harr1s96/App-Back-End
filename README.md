@@ -1,19 +1,3 @@
-What we done did:
-
-AWS instances:
-    prod and dev for front-end and back-end
-    RDS sql for prod
-    H2 for dev
-    secure vpc
-    each instance on own subnet
-    each EC2 instance has security group
-Pipeline:
-    Jenkins
-    pipes for backend + front end, prod + dev, selenium
-
-Nexus:
-    backup repo of images for docker
-
 #Documentation
 
 ##Prerequisites:
@@ -22,8 +6,8 @@ Nexus:
 * DockerHub account
 * Functioning Jenkins and Nexus virtual machines with public IPv4 addresses
 
-## Initial setup:
-### Overview:
+##Initial setup:
+###Overview:
 Note before starting:  This tutorial assumed you are using the EU-West region on AWS at London.  If oyu are not, some details may differ between this tutorial and your experiences.
 1.  Create VPC and SubNets on AWS
 2.  Create RDS on AWS
@@ -31,7 +15,7 @@ Note before starting:  This tutorial assumed you are using the EU-West region on
 4.  Create EC2 instances on AWS
 5.  SSH into and then set up EC2 instances on AWS
 
-### 1. Create VPC and SubNets on AWS:
+###1. Create VPC and SubNets on AWS:
 1. Navigate to the VPC Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/vpc/)
 2. From here, navigate to Your VPCs in the left pane.  You should see a dashboard of VPCs, if you haven't touched this before the only one present will be default.
 3.  Click the Create VPC button in blue.
@@ -47,7 +31,7 @@ Leave the IPv6 option as "No IPv6 CIDR Block".  Tenancy can also be left on defa
 
 You should now have a VPC and three Subnets attached to it.
 
-### 2.  Create RDS on AWS:
+###2.  Create RDS on AWS:
 1.  Navigate to the RDS Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/rds)
 2.  Navigate to the Databases tab on the left pane.
 3.  If you have not used this tool before, there should be no databases present.  Create one by clicking the orange Create database button.
@@ -58,10 +42,10 @@ You should now have a VPC and three Subnets attached to it.
 8.  Under Database authentication, select Password and IAM database authentication.
 9.  All other options can be left as default.  Finish the creation process by clicking the create button.  You will be returned to the Dashboard and should see your new Database being created.  This wil take some time.
 
-### 3.  Create Security Groups and IAM Roles on AWS:
+###3.  Create Security Groups and IAM Roles on AWS:
 
 
-### 4.  Create EC2 instances on AWS:
+###4.  Create EC2 instances on AWS:
 1.  Navigate to the EC2 Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/ec2)
 2.  We will be creating two EC2 instances during this tutorial, one for your frontend and one for your backend.  The remaining two of the four required will be created in a later stage.
 3.  Navigate to the Instances Dashboard in the left pane, and click the Launch Instance button.
@@ -77,7 +61,7 @@ You should now have a VPC and three Subnets attached to it.
 12.  Repeat the above steps from 3 to 11 for both a frontend and a backend instance.
 13.  At the end of this section, you should have two instances shown in your EC2 Dashboard.  It is advised you give them a name in the dashboard to differentiate them.
 
-### 5.  SSH into and then setup your EC2 instances on AWS:
+###5.  SSH into and then setup your EC2 instances on AWS:
 1.  Navigate to the EC2 Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/ec2)
 2.  We will be configuring the Backend and Frontend instances created earlier.  The steps for both are largely the same.
 3.  Navigate to the Instances Dashboard in the left pane, and select an instance.
@@ -104,6 +88,8 @@ nano ScriptNameHere.sh</code></pre>
 This will create and then edit a file of your chosen name.  Into this file copy and paste the following code.  If you have never used Nano before it is reccomended that you use the mouse to right-click and paste, or see this [guide](https://wiki.gentoo.org/wiki/Nano/Basics_Guide)
 <pre><code>
 #!/bin/bash
+(docker stop watchtower && docker rm watchtower) || echo "No prior watchtower"
+docker run -d --name watchtower --rm -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower --interval 10
 (docker stop back-end && docker rm back-end) || echo "No prior back-end"
 docker system prune -f
 docker pull YourDockerHubAccount/back-end
@@ -133,9 +119,12 @@ and start it with
 13.  You should now have a script that executes on start up which pulls down a docker image and runs it in a docker container.
 The guide above used the backend as an example with the Docker image being called "back-end".  The front end will run on port 9091:80 instead of 9090:8081.  The details of your docker image may vary.
 Do not worry if this script does not run if the docker images have not yet been made.   This will be covered in the pipeline guide.
+14.  You will also need to install MySQL on the backend EC2 instances.  Do this with the following command:
+<pre><code>sudo apt install mysql--client</code></pre>
 
-## Pipelines:
-### Overview
+
+##Pipelines:
+###Overview
 In this section, we shall create pipelines for the development branches of backend and frontend.
 The production, or master, pipelines can be created using a similar process.
 For this section, you will need access to a functioning Nexus and Jenkins virtual machine.
@@ -143,7 +132,7 @@ For this section, you will need access to a functioning Nexus and Jenkins virtua
 2. Setup the backend pipeline.
 3. Setup the frontend pipeline.
 
-### 1.  Configure jenkins and use a jenkinsfile.
+###1.  Configure jenkins and use a jenkinsfile.
 1.  In the github for this project, you will find a jenkinsfile at the toplevel of the project file structure in the dev branch.
 You will need to edit to work with your Docker Hub account.
 The file will initially look like this:
@@ -181,7 +170,7 @@ pipeline {
 8.  Click the "Add Credentials" button and fill in your Docker Hub credentials.
 Again, ensure the ID of these credentials is "docker-credentials"
 
-### 2.  Setup the Pipeline
+###2.  Setup the Pipeline
 1.  From the homepage of jenkins, click on New Item.
 2.  name your pipeline and select the pipeline option below.  Then click the OK button.
 3.  Feel free to enter a description on the next page.  Check the following options in the General section:
@@ -203,33 +192,33 @@ All other options can be left as default.
 
 
 
-## FAQ:
-### Question:  I tried connected to my instance and I got the error "Please login as ubuntu rather than the user root"
-#### Answer:
+##FAQ:
+###Question:  I tried connected to my instance and I got the error "Please login as ubuntu rather than the user root"
+####Answer:
 The command AWS provided was likely of the form:
 <pre><code>ssh -i "key.pem" root@ecX-XX-XX-XX-XX.eu-west-2.compute.amazonaws.com</code></pre>
 Change the command from root@ec to ubuntu@ec2 and try the command again.
 
 
-### Question:  I tried to run docker commands and got the error "Got permission denied while trying to connect to the Docker daemon socket!"
-#### Answer:
+###Question:  I tried to run docker commands and got the error "Got permission denied while trying to connect to the Docker daemon socket!"
+####Answer:
 This means the final command did not work.  Please try using the following command again:
  <pre><code>sudo usermod -aG docker $USER</code></pre>
  After running this command close the terminal and then reopen it and reconnect to your EC2 instance.  If it still does not work, please see the guide [How to install and use Docker on Ubuntu](https://www.hostinger.co.uk/tutorials/how-to-install-and-use-docker-on-ubuntu/)
 
 
-### Question: i tried to run "curl https://get.docker.com | sudo bash" and was told curl was not installed?
+###Question: I tried to run "curl https://get.docker.com | sudo bash" and was told curl was not installed?
 ####Answer:
 Please install Curl using the command: <pre><code>sudo apt install curl</code></pre> and try the installation process again.
 
 
 ### Question:  I tried to run "curl httpdocker sudo bash" again and it still didn't work!
-#### Answer:
+####Answer:
 Try to install Docker instead with
 <pre><code>sudo apt install docker.io -y</code></pre>
 Then follow the other steps in the installation guide
 
 
 #### Question:  I tried to run Docker --version and got the error "Command 'docker' not found", please help!
-#### Answer:
+####Answer:
 This means Docker did not install correctly.  Please repeat the docker installation instructions again.  If the problem persists, please consult this guide: [How to install and use Docker on Ubuntu](https://www.hostinger.co.uk/tutorials/how-to-install-and-use-docker-on-ubuntu/)
