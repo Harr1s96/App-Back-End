@@ -22,8 +22,8 @@ Nexus:
 * DockerHub account
 * Functioning Jenkins and Nexus virtual machines with public IPv4 addresses
 
-##Initial setup:
-###Overview:
+## Initial setup:
+### Overview:
 Note before starting:  This tutorial assumed you are using the EU-West region on AWS at London.  If oyu are not, some details may differ between this tutorial and your experiences.
 1.  Create VPC and SubNets on AWS
 2.  Create RDS on AWS
@@ -31,7 +31,7 @@ Note before starting:  This tutorial assumed you are using the EU-West region on
 4.  Create EC2 instances on AWS
 5.  SSH into and then set up EC2 instances on AWS
 
-###1. Create VPC and SubNets on AWS:
+### 1. Create VPC and SubNets on AWS:
 1. Navigate to the VPC Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/vpc/)
 2. From here, navigate to Your VPCs in the left pane.  You should see a dashboard of VPCs, if you haven't touched this before the only one present will be default.
 3.  Click the Create VPC button in blue.
@@ -47,7 +47,7 @@ Leave the IPv6 option as "No IPv6 CIDR Block".  Tenancy can also be left on defa
 
 You should now have a VPC and three Subnets attached to it.
 
-###2.  Create RDS on AWS:
+### 2.  Create RDS on AWS:
 1.  Navigate to the RDS Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/rds)
 2.  Navigate to the Databases tab on the left pane.
 3.  If you have not used this tool before, there should be no databases present.  Create one by clicking the orange Create database button.
@@ -58,10 +58,10 @@ You should now have a VPC and three Subnets attached to it.
 8.  Under Database authentication, select Password and IAM database authentication.
 9.  All other options can be left as default.  Finish the creation process by clicking the create button.  You will be returned to the Dashboard and should see your new Database being created.  This wil take some time.
 
-###3.  Create Security Groups and IAM Roles on AWS:
+### 3.  Create Security Groups and IAM Roles on AWS:
 
 
-###4.  Create EC2 instances on AWS:
+### 4.  Create EC2 instances on AWS:
 1.  Navigate to the EC2 Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/ec2)
 2.  We will be creating two EC2 instances during this tutorial, one for your frontend and one for your backend.  The remaining two of the four required will be created in a later stage.
 3.  Navigate to the Instances Dashboard in the left pane, and click the Launch Instance button.
@@ -77,7 +77,7 @@ You should now have a VPC and three Subnets attached to it.
 12.  Repeat the above steps from 3 to 11 for both a frontend and a backend instance.
 13.  At the end of this section, you should have two instances shown in your EC2 Dashboard.  It is advised you give them a name in the dashboard to differentiate them.
 
-###5.  SSH into and then setup your EC2 instances on AWS:
+### 5.  SSH into and then setup your EC2 instances on AWS:
 1.  Navigate to the EC2 Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/ec2)
 2.  We will be configuring the Backend and Frontend instances created earlier.  The steps for both are largely the same.
 3.  Navigate to the Instances Dashboard in the left pane, and select an instance.
@@ -134,35 +134,102 @@ and start it with
 The guide above used the backend as an example with the Docker image being called "back-end".  The front end will run on port 9091:80 instead of 9090:8081.  The details of your docker image may vary.
 Do not worry if this script does not run if the docker images have not yet been made.   This will be covered in the pipeline guide.
 
+## Pipelines:
+### Overview
+In this section, we shall create pipelines for the development branches of backend and frontend.
+The production, or master, pipelines can be created using a similar process.
+For this section, you will need access to a functioning Nexus and Jenkins virtual machine.
+1. Configure jenkins and use a jenkinsfile.
+2. Setup the backend pipeline.
+3. Setup the frontend pipeline.
+
+### 1.  Configure jenkins and use a jenkinsfile.
+1.  In the github for this project, you will find a jenkinsfile at the toplevel of the project file structure in the dev branch.
+You will need to edit to work with your Docker Hub account.
+The file will initially look like this:
+<pre><code>
+pipeline {
+    agent any
+    stages {
+        /*stage('--- package and deploy to Nexus ---') {
+            steps {
+                sh "mvn clean package deploy"
+            }
+        }*/
+        stage('-- build docker image --') {
+            steps {
+                sh "docker build -t back-end ."
+            }
+        }
+        stage('-- deploy image to Docker Hub --') {
+            steps {
+                withDockerRegistry([credentialsId: "docker-credentials", url: ""]) {
+                    sh 'docker tag back-end bigheck123/back-end'
+                    sh 'docker push bigheck123/back-end'
+                }
+            }
+        }
+    }
+}
+</code></pre>
+2.  You will need to alter only the stage labeled '-- deploy image to Docker Hub --'.
+3.  You will need to replace bigheck123 with the name of your Docker Hub account.
+4.  You will also need to add your Docker Hub credentials to jenkins and ensure it has the id docker-credentials.
+5.  To do this, navigate to your Jenkins VM in your browser, and log in.  Click on the Credentials link on the left side of the page.
+6.  At the bottom of the page, you should find a section labeled Stores Scoped to Jenkins.  Click on the Store labeled jenkins and (global).
+7.  Now click on the "Global credentials (unrestricted)" option under System.
+8.  Click the "Add Credentials" button and fill in your Docker Hub credentials.
+Again, ensure the ID of these credentials is "docker-credentials"
+
+### 2.  Setup the Pipeline
+1.  From the homepage of jenkins, click on New Item.
+2.  name your pipeline and select the pipeline option below.  Then click the OK button.
+3.  Feel free to enter a description on the next page.  Check the following options in the General section:
+* Discard old builds
+* GitHub project
+You will need to populate the input boxes.  We recommend you keep builds for at least 2 days and keep at least 2 builds.
+You will need to put in the url for the GitHub project.
+4.  In the build trigger section, you must check the following box:
+* Poll SCM
+In the text box, we recommend you enter following text: H/10 * * * *
+You can schedule the pipeline to check for updates on Github more or less often.
+5.  In the pipeline section, change the Defintion from "Pipeline script" to "Pipeline script from SCM".
+This will produce more options to choose from.  Select GitHub in SCM, re-enter the GitHub url and specify the branch to use.
+For this tutorial, specify "*/dev".
+All other options can be left as default.
+6.  Click the save and apply buttons, and then navigate to the homepage of jenkins again and ensure the new pipeline has been added.
+7.  Repeat these steps for the frontend as well as the backend.  The GitHub url and branches will differ.
 
 
-### FAQ:
-#### Question:  I tried connected to my instance and I got the error "Please login as ubuntu rather than the user root"
-####Answer:
+
+
+## FAQ:
+### Question:  I tried connected to my instance and I got the error "Please login as ubuntu rather than the user root"
+#### Answer:
 The command AWS provided was likely of the form:
 <pre><code>ssh -i "key.pem" root@ecX-XX-XX-XX-XX.eu-west-2.compute.amazonaws.com</code></pre>
 Change the command from root@ec to ubuntu@ec2 and try the command again.
 
 
-#### Question:  I tried to run docker commands and got the error "Got permission denied while trying to connect to the Docker daemon socket!"
-####Answer:
+### Question:  I tried to run docker commands and got the error "Got permission denied while trying to connect to the Docker daemon socket!"
+#### Answer:
 This means the final command did not work.  Please try using the following command again:
  <pre><code>sudo usermod -aG docker $USER</code></pre>
  After running this command close the terminal and then reopen it and reconnect to your EC2 instance.  If it still does not work, please see the guide [How to install and use Docker on Ubuntu](https://www.hostinger.co.uk/tutorials/how-to-install-and-use-docker-on-ubuntu/)
 
 
-####  Question: i tried to run "curl https://get.docker.com | sudo bash" and was told curl was not installed?
+### Question: i tried to run "curl https://get.docker.com | sudo bash" and was told curl was not installed?
 ####Answer:
 Please install Curl using the command: <pre><code>sudo apt install curl</code></pre> and try the installation process again.
 
 
-####Question:  I tried to run "curl httpdocker sudo bash" again and it still didn't work!
-####Answer:
+### Question:  I tried to run "curl httpdocker sudo bash" again and it still didn't work!
+#### Answer:
 Try to install Docker instead with
 <pre><code>sudo apt install docker.io -y</code></pre>
 Then follow the other steps in the installation guide
 
 
 #### Question:  I tried to run Docker --version and got the error "Command 'docker' not found", please help!
-####Answer:
+#### Answer:
 This means Docker did not install correctly.  Please repeat the docker installation instructions again.  If the problem persists, please consult this guide: [How to install and use Docker on Ubuntu](https://www.hostinger.co.uk/tutorials/how-to-install-and-use-docker-on-ubuntu/)
