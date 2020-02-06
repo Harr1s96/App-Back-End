@@ -136,11 +136,11 @@ The file will initially look like this:
 pipeline {
     agent any
     stages {
-        /*stage('--- package and deploy to Nexus ---') {
+        stage('--- package and deploy to Nexus ---') {
             steps {
                 sh "mvn clean package deploy"
             }
-        }*/
+        }
         stage('-- build docker image --') {
             steps {
                 sh "docker build -t back-end ."
