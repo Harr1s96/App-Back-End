@@ -1,22 +1,7 @@
-What we done did:
 
-AWS instances:
-    prod and dev for front-end and back-end
-    RDS sql for prod
-    H2 for dev
-    secure vpc
-    each instance on own subnet
-    each EC2 instance has security group
-Pipeline:
-    Jenkins
-    pipes for backend + front end, prod + dev, selenium
+# DevOps Wiki
 
-Nexus:
-    backup repo of images for docker
-
-#Documentation
-
-##Prerequisites:
+## Prerequisites:
 * AWS account, free tier at least
 * Project on GitHub
 * DockerHub account
@@ -24,7 +9,7 @@ Nexus:
 
 ## Initial setup:
 ### Overview:
-Note before starting:  This tutorial assumed you are using the EU-West region on AWS at London.  If oyu are not, some details may differ between this tutorial and your experiences.
+Note before starting:  This tutorial assumed you are using the EU-West region on AWS at London.  If you are not, some details may differ between this tutorial and your experiences.
 1.  Create VPC and SubNets on AWS
 2.  Create RDS on AWS
 3.  Create Security Groups on AWS
@@ -50,7 +35,7 @@ You should now have a VPC and three Subnets attached to it.
 ### 2.  Create RDS on AWS:
 1.  Navigate to the RDS Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/rds)
 2.  Navigate to the Databases tab on the left pane.
-3.  If you have not used this tool before, there should be no databases present.  Create one by clicking the orange Create database button.
+3.  If you have not used this tool before, there should be no databases present. Create one by clicking the orange Create database button.
 4.  You will be offered the choice of Standard Create and Easy Create, select Standard.
 5.  Below this, options for the database type are presented.  Select MySQL and make sure you are using the latest version.  At the time of writing, this was MySQL 8.0.16.
 6.  Scroll down to find Database settings.  Give your database a suitable name, master username and master password.  Make sure you do not lose this password.
