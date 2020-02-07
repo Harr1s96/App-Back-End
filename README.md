@@ -15,7 +15,7 @@ Note before starting:  This tutorial assumed you are using the EU-West region on
 3.  Create Security Groups on AWS
 4.  Create EC2 instances on AWS	
 5.  SSH into and then set up EC2 instances on AWS
-![Image of the pipeline](https://i.imgur.com/yQeiVCA)
+![Image of the pipeline](https://i.imgur.com/yQeiVCA.png)
 
 
 ### 1. Create VPC and SubNets on AWS:
