@@ -13,8 +13,10 @@ Note before starting:  This tutorial assumed you are using the EU-West region on
 1.  Create VPC and SubNets on AWS
 2.  Create RDS on AWS
 3.  Create Security Groups on AWS
-4.  Create EC2 instances on AWS
+4.  Create EC2 instances on AWS	
 5.  SSH into and then set up EC2 instances on AWS
+![Image of the pipeline](https://imgur.com/yQeiVCA)
+
 
 ### 1. Create VPC and SubNets on AWS:
 1. Navigate to the VPC Dashboard on AWS, available [here](https://eu-west-2.console.aws.amazon.com/vpc/)
