@@ -204,7 +204,7 @@ This means the final command did not work.  Please try using the following comma
 
 
 ### Question: i tried to run "curl https://get.docker.com | sudo bash" and was told curl was not installed?
-####Answer:
+#### Answer:
 Please install Curl using the command: <pre><code>sudo apt install curl</code></pre> and try the installation process again.
 
 
